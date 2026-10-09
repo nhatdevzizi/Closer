@@ -12,6 +12,22 @@ Bản demo dành cho nhà đầu tư, dựa trên ý tưởng vòng tay hỗ tr�
 
 Kịch bản bổ sung gồm nghi ngờ ngã, không ghi nhận chuyển động, mất kết nối và chưa có vị trí. Các kịch bản phát hiện chưa có ngưỡng hoặc thuật toán thực tế.
 
+## GitHub Pages
+
+Website: https://nhatdevzizi.github.io/Closer/
+
+GitHub Pages phục vụ nội dung thư mục `dist` qua nhánh `gh-pages`. Trang này công khai, độc lập với bản riêng tư trên Sites.
+
+Sau khi sửa và commit mã nguồn trên `main`, cập nhật Pages bằng:
+
+```sh
+git push origin main
+git subtree split --prefix dist -b gh-pages
+git push origin gh-pages
+```
+
+GitHub tự triển khai khi nhánh `gh-pages` được cập nhật. Push riêng nhánh `main` chưa cập nhật website. Tệp `.nojekyll` giữ cách phục vụ HTML, CSS và JavaScript tĩnh.
+
 ## Chạy trên máy
 
 Ứng dụng là HTML, CSS và JavaScript chuẩn, không cần bước biên dịch hoặc thư viện chạy ứng dụng. Phục vụ thư mục `dist` bằng một máy chủ tĩnh, ví dụ `python -m http.server 4173 --directory dist`, rồi mở `http://localhost:4173`. Không mở trực tiếp tệp HTML bằng giao thức file vì ứng dụng dùng module JavaScript.
