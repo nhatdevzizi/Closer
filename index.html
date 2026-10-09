@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>An Tâm — Chăm sóc người thân từ xa</title>
+  <meta name="description" content="Trải nghiệm mô phỏng vòng tay hỗ trợ người cao tuổi: xem vị trí mẫu, nhận SOS và xử lý cảnh báo cùng gia đình.">
+  <meta name="theme-color" content="#087f8c">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23087f8c'/%3E%3Cpath d='M20 30C5 21 9 9 16 12L20 16 24 12C31 9 35 21 20 30Z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Đến nội dung chính</a>
+<header class="masthead">
+  <div class="header-inner wrap">
+    <a href="#overview" class="brand" aria-label="An Tâm — Tổng quan"><span class="brand-symbol" data-icon="heart"></span><span>An Tâm<small>Đồng hành cùng gia đình</small></span></a>
+    <div class="header-right"><span class="demo-label"><span data-icon="flask"></span> Bản mô phỏng · dữ liệu mẫu</span><div class="viewer"><span class="avatar small">GĐ</span><span>Gia đình<small>Vai trò người thân</small></span></div></div>
+  </div>
+  <nav class="nav wrap" aria-label="Điều hướng chính">
+    <div class="nav-links"><a href="#overview" data-view="overview" aria-current="page"><span data-icon="grid"></span>Tổng quan</a><a href="#alerts" data-view="alerts"><span data-icon="bell"></span>Cảnh báo <span id="nav-count" class="count">0</span></a><a href="#history" data-view="history"><span data-icon="history"></span>Lịch sử</a></div>
+    <button class="button subtle" id="open-guide" aria-label="Hướng dẫn demo"><span data-icon="play"></span><span>Hướng dẫn demo</span></button>
+  </nav>
+</header>
+<main id="main" class="wrap" tabindex="-1">
+  <div class="page-heading"><div><p class="eyebrow">Không ở gần, vẫn luôn bên cạnh</p><h1 id="page-title">Tổng quan chăm sóc</h1></div><div class="date" id="today"></div></div>
+  <section id="overview-view" aria-labelledby="page-title">
+    <div class="care-grid">
+      <aside class="profile panel">
+        <div class="profile-top"><span class="avatar elder">M</span><span class="sample-tag">Hồ sơ mẫu</span></div>
+        <h2>Bà Nguyễn Thị Minh</h2><p class="muted">Người thân được chăm sóc</p>
+        <div class="profile-divider"></div>
+        <div class="profile-row"><span class="icon-tile" data-icon="watch"></span><div><small>Vòng tay</small><strong>An Tâm · AT-001</strong></div></div>
+        <div class="profile-row"><span class="icon-tile" data-icon="wifi"></span><div><small>Kết nối thiết bị</small><strong id="connection-label" class="success-text">Đang kết nối</strong></div></div>
+        <div class="profile-row"><span class="icon-tile" data-icon="clock"></span><div><small>Cập nhật gần nhất</small><strong id="last-update">Đang khởi tạo…</strong></div></div>
+        <div class="profile-note"><span data-icon="info"></span><p>Thông tin và vị trí trên trang đều là dữ liệu mô phỏng.</p></div>
+      </aside>
+      <section class="map-panel panel" aria-labelledby="map-title">
+        <div class="panel-head"><div><h2 id="map-title">Vị trí người thân</h2><p class="muted" id="map-subtitle">Vị trí ghi nhận gần nhất</p></div><span class="light-tag">Bản đồ mô phỏng</span></div>
+        <div class="map" id="map-area">
+          <svg class="map-geometry" viewBox="0 0 800 460" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Sơ đồ khu dân cư mô phỏng, gồm nhà mẫu và công viên; không phải bản đồ địa lý thực tế">
+            <rect width="800" height="460" fill="#eff3f0"/>
+            <g fill="#e3e9e5" stroke="#d8e2dc" stroke-width="1"><rect x="30" y="25" width="165" height="90" rx="8"/><rect x="30" y="150" width="165" height="122" rx="8"/><rect x="31" y="323" width="165" height="115" rx="8"/><rect x="251" y="28" width="169" height="88" rx="8"/><rect x="465" y="25" width="102" height="90" rx="8"/><rect x="255" y="336" width="144" height="94" rx="8"/><rect x="440" y="336" width="117" height="94" rx="8"/><rect x="628" y="324" width="145" height="114" rx="8"/></g>
+            <path d="M600 -30C630 70 558 130 614 223S676 344 632 500" fill="none" stroke="#c7e6e9" stroke-width="54"/>
+            <g fill="none" stroke="#fff" stroke-width="25"><path d="M219 -10V460M0 136H800M0 303H800M442 0V130M418 305V470M589 0V145"/><path d="M210 265L597 166"/></g>
+            <path d="M245 155H407V226L247 266Z" fill="#d0e5d7" stroke="#bed8c8"/>
+            <g fill="none" stroke="#e6e3d5" stroke-width="4"><path d="M219 -10V460M0 136H800M0 303H800"/></g>
+            <g font-family="Arial,sans-serif" font-size="15" fill="#64746d"><text x="283" y="196">Công viên mẫu</text><text x="82" y="209">Khu dân cư</text><text x="304" y="390">Khu dân cư</text><text x="665" y="385">Khu dân cư</text><text x="49" y="129" font-size="12">Đường nội khu A</text><text x="450" y="294" font-size="12">Đường nội khu B</text></g>
+          </svg>
+          <div id="map-pin" class="map-pin home"><div class="pin-label"><strong id="map-location-name">Nhà mẫu</strong><span>Bà Minh · vị trí mô phỏng</span></div><div class="pin-dot">M</div></div>
+          <div id="map-unavailable" class="map-unavailable" hidden><span data-icon="map-pin"></span><strong>Chưa có dữ liệu vị trí</strong><span>Cảnh báo vẫn có thể được hiển thị.</span></div>
+          <div class="map-legend"><span class="legend-dot"></span> Vị trí ghi nhận gần nhất</div>
+        </div>
+        <div class="map-footer"><span data-icon="map-pin"></span><div><strong id="location-label">Nhà mẫu · Khu dân cư mô phỏng</strong><small id="location-time">Dữ liệu đang được khởi tạo</small></div></div>
+      </section>
+      <section class="alerts-panel panel" aria-labelledby="recent-alerts-title"><div class="panel-head"><h2 id="recent-alerts-title">Cần chú ý</h2><span id="active-count" class="count">0</span></div><div id="recent-alerts"><div class="empty-state"><span class="empty-icon" data-icon="shield"></span><h3>Chưa có cảnh báo mới</h3><p>Khi có sự kiện, thông tin sẽ xuất hiện tại đây để bạn tiếp nhận.</p><button class="button primary" data-simulate="sos"><span data-icon="play"></span>Thử cảnh báo SOS</button></div></div><div class="panel-bottom"><a href="#alerts">Xem danh sách cảnh báo</a></div></section>
+    </div>
+  </section>
+  <section id="alerts-view" class="panel list-view" hidden><div class="panel-head"><div><h2>Cảnh báo của Bà Minh</h2><p class="muted">Tiếp nhận từng sự kiện và ghi nhận kết quả hỗ trợ.</p></div></div><div id="alert-list"></div></section>
+  <section id="history-view" class="panel list-view" hidden><div class="panel-head"><div><h2>Lịch sử xử lý</h2><p class="muted">Các thao tác được ghi nhận trong phiên demo hiện tại.</p></div></div><div id="history-list"></div></section>
+  <section class="simulator" aria-labelledby="sim-title"><div class="sim-heading"><div class="sim-title"><span class="sim-icon" data-icon="sliders"></span><div><h2 id="sim-title">Điều khiển demo</h2><p>Chọn một tình huống để trải nghiệm cách gia đình nhận cảnh báo.</p></div></div><button class="button subtle" id="reset-demo"><span data-icon="refresh"></span>Đặt lại</button></div>
+    <div class="scenario-grid"><button class="scenario" data-simulate="sos"><span class="scenario-icon" data-icon="sos"></span><span><strong>Nhấn nút SOS</strong><small>Chủ động yêu cầu hỗ trợ</small></span><span class="scenario-play" data-icon="play"></span></button><button class="scenario" data-simulate="fall"><span class="scenario-icon" data-icon="activity"></span><span><strong>Nghi ngờ ngã</strong><small>Tạo tình huống cần xác minh</small></span><span class="scenario-play" data-icon="play"></span></button><button class="scenario" data-simulate="inactive"><span class="scenario-icon" data-icon="clock"></span><span><strong>Không có chuyển động</strong><small>Kịch bản bất thường mẫu</small></span><span class="scenario-play" data-icon="play"></span></button><button class="scenario" id="toggle-connection"><span class="scenario-icon" data-icon="wifi-off"></span><span><strong id="connection-action">Mất kết nối</strong><small id="connection-hint">Xem trạng thái khi mất tín hiệu</small></span><span class="scenario-play" data-icon="play"></span></button></div>
+    <div class="sim-options"><div class="location-options"><label for="location-select">Vị trí mẫu</label><select id="location-select"><option value="home">Nhà mẫu</option><option value="park">Công viên mẫu</option><option value="none">Chưa có vị trí</option></select><span id="location-hint" class="muted"></span></div><span class="session-note">Tải lại trang sẽ bắt đầu phiên mới.</span></div>
+  </section>
+  <footer><span>An Tâm · Đồng hành cùng gia đình</span><span>Ý tưởng sản phẩm · Không kết nối thiết bị thực tế</span></footer>
+</main>
+<dialog id="detail-dialog" aria-labelledby="detail-title"><div id="detail-content"></div></dialog>
+<dialog id="guide-dialog" aria-labelledby="guide-title"><div class="dialog-head"><div><p class="eyebrow">Trải nghiệm dành cho nhà đầu tư</p><h2 id="guide-title">Một sự kiện. Một kết nối kịp thời.</h2></div><button class="icon-button" data-close aria-label="Đóng hướng dẫn"><span data-icon="x"></span></button></div><div class="dialog-body"><p>Đóng vai người thân và trải nghiệm luồng hỗ trợ. Tất cả tín hiệu, vị trí và thao tác liên hệ đều được mô phỏng.</p><ol class="guide-steps"><li><strong>Tạo sự kiện</strong><span>Chọn “Nhấn nút SOS” trong bảng điều khiển.</span></li><li><strong>Nhận thông tin</strong><span>Mở cảnh báo để xem loại sự kiện, thời điểm và vị trí.</span></li><li><strong>Tiếp nhận và hỗ trợ</strong><span>Chọn “Tôi tiếp nhận”, mô phỏng liên hệ, rồi ghi nhận kết quả.</span></li></ol><p class="info-box">Thử thêm tình huống mất kết nối để phân biệt vị trí gần nhất và thông tin hiện tại. Demo không kiểm chứng khả năng cảm biến hoặc dự báo ngã.</p></div><div class="dialog-actions"><button class="button primary" id="guide-start">Bắt đầu với SOS</button></div></dialog>
+<dialog id="reset-dialog" aria-labelledby="reset-title"><div class="dialog-head"><h2 id="reset-title">Bắt đầu phiên demo mới?</h2><button class="icon-button" data-close aria-label="Đóng"><span data-icon="x"></span></button></div><div class="dialog-body"><p>Cảnh báo, lịch sử và ghi chú trong phiên này sẽ được xóa. Vị trí và kết nối sẽ trở về dữ liệu mẫu ban đầu.</p></div><div class="dialog-actions"><button class="button" data-close>Giữ phiên hiện tại</button><button class="button primary" id="confirm-reset">Đặt lại demo</button></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="app.js"></script>
+</body></html>
