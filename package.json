@@ -1,0 +1,1 @@
+{"name":"an-tam-care-demo","private":true,"type":"module","scripts":{"test":"node --test tests/state.test.js"}}
