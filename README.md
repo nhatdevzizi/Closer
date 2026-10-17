@@ -1,6 +1,6 @@
 # An Tâm — ứng dụng mô phỏng chăm sóc người thân
 
-Bản demo dành cho nhà đầu tư, dựa trên ý tưởng vòng tay hỗ trợ người cao tuổi. “An Tâm” là tên tạm. Bảng màu SOS dùng đỏ cho màu nhấn, nền trắng và xám trung tính; xanh lá cho trạng thái an toàn, hổ phách cho cảnh báo. Bố cục ban đầu tham khảo từ https://miraihealthcare.vn/. Không sử dụng logo, ảnh hoặc nội dung dịch vụ của Mirai Healthcare.
+Bản demo dành cho nhà đầu tư, dựa trên ý tưởng vòng tay hỗ trợ người cao tuổi. “An Tâm” là tên tạm. Bảng màu Care & Response: xanh dương #2563EB cho nút chính, điều hướng và liên kết; navy #16324F cho tiêu đề; đỏ #DC2626 cho SOS; teal #0F766E cho chăm sóc; xanh lá #15803D cho an toàn; hổ phách #B45309 cho cảnh báo; nền #F8FAFC, bề mặt #FFFFFF và chữ #1E293B. Bố cục ban đầu tham khảo từ https://miraihealthcare.vn/. Không sử dụng logo, ảnh hoặc nội dung dịch vụ của Mirai Healthcare.
 
 ## Sử dụng
 
