@@ -9,3 +9,5 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
 
+
+.contacts-panel{margin-top:24px}.contacts-form{margin:0;padding:0 24px 24px}.contacts-form textarea{margin-bottom:16px}.contacts-form p{font-size:13px;margin-top:12px;overflow-wrap:anywhere}[data-countdown]{color:var(--danger);font-variant-numeric:tabular-nums}

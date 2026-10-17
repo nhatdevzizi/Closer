@@ -6,16 +6,42 @@ export const eventTypes = {
 export const locations = {home:'Nhà mẫu · Khu dân cư mô phỏng',park:'Công viên mẫu · Khu dân cư mô phỏng'};
 export const outcomes = {reached:'Đã liên hệ, không cần hỗ trợ thêm',helped:'Đã có người hỗ trợ',falseAlarm:'Cảnh báo nhầm'};
 export function createState(now = new Date().toISOString()) {
-  return {connected:true, location:{key:'home',name:locations.home,recordedAt:now}, updatedAt:now, events:[], history:[]};
+  return {connected:true, location:{key:'home',name:locations.home,recordedAt:now}, updatedAt:now, events:[], history:[], emergencyContacts:[]};
 }
 function log(state, eventId, text, now, note='') {state.history.unshift({id:crypto.randomUUID(),eventId,text,at:now,note});}
 function findEvent(state,id) {const event=state.events.find(e=>e.id===id);if(!event)throw new Error('Không tìm thấy cảnh báo trong phiên hiện tại.');return event;}
 export function addEvent(state, type, now = new Date().toISOString()) {
   if(!Object.hasOwn(eventTypes,type))throw new Error('Loại sự kiện không hợp lệ.');
-  const event={id:crypto.randomUUID(),type,at:now,location:state.location?{...state.location}:null,connected:state.connected,status:'new',contact:null,outcome:null,note:''};
+  const event={id:crypto.randomUUID(),type,at:now,deadline:new Date(Date.parse(now)+60000).toISOString(),confirmedAt:null,escalation:null,location:state.location?{...state.location}:null,connected:state.connected,status:'new',contact:null,outcome:null,note:''};
   state.events.unshift(event);
   log(state,event.id,`Hiển thị cảnh báo: ${eventTypes[type].title}`,now);
   return event;
+}
+export function setEmergencyContacts(state, contacts) {
+  if(!Array.isArray(contacts)||contacts.length>10||contacts.some(c=>!c||typeof c.name!=='string'||!c.name.trim()||c.name.length>80||typeof c.phone!=='string'||!/^\+?[0-9]{8,15}$/.test(c.phone)))throw new Error('Nhập tối đa 10 liên hệ: tên và số điện thoại gồm 8–15 chữ số.');
+  if(new Set(contacts.map(c=>c.phone)).size!==contacts.length)throw new Error('Số điện thoại liên hệ bị trùng.');
+  state.emergencyContacts=contacts.map(c=>({name:c.name.trim(),phone:c.phone}));
+}
+export function confirmSafety(state,id,now=new Date().toISOString()) {
+  const event=findEvent(state,id);
+  if(event.confirmedAt||event.escalation||Date.parse(now)>=Date.parse(event.deadline))return false;
+  event.confirmedAt=now;
+  log(state,id,'Người đeo xác nhận an toàn — dừng đếm ngược',now);return true;
+}
+// shortcut: escalation records are simulations; add verified device, call and SMS services before real use.
+export function escalateDue(state,now=new Date().toISOString()) {
+  const escalated=[];
+  for(const event of state.events){
+    if(event.confirmedAt||event.escalation||event.status==='done'||Date.parse(now)<Date.parse(event.deadline))continue;
+    const location=event.location?`${event.location.name} (ghi nhận ${event.location.recordedAt}; ${event.connected?'kết nối khi phát sinh':'dữ liệu gần nhất, thiết bị mất kết nối'})`:'Chưa có dữ liệu vị trí';
+    const message=`KHẨN CẤP — Bà Minh: ${eventTypes[event.type].title}. Không xác nhận sau 60 giây. Vị trí: ${location}.`;
+    event.escalation={at:now,hotline:'115',message,contacts:state.emergencyContacts.map(c=>({...c})),simulated:true};
+    log(state,event.id,`Mô phỏng gọi 115 và gửi vị trí: ${location}`,now);
+    for(const c of event.escalation.contacts)log(state,event.id,`Mô phỏng SMS đến ${c.name} (${c.phone})`,now,message);
+    if(!event.escalation.contacts.length)log(state,event.id,'Không có liên hệ khẩn cấp được cấu hình — chưa mô phỏng SMS',now);
+    escalated.push(event);
+  }
+  return escalated;
 }
 export function acknowledge(state,id,now=new Date().toISOString()) {
   const event=findEvent(state,id);

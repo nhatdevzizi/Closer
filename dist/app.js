@@ -6,7 +6,7 @@ const initialTime=new Intl.DateTimeFormat('vi-VN',{timeStyle:'short',timeZone:'A
 document.getElementById('last-update').textContent=initialTime;
 document.getElementById('location-time').textContent=`Ghi nhận lúc ${initialTime} · dữ liệu mẫu`;
 
-import {createState,eventTypes,locations,outcomes,addEvent,acknowledge,contact,conclude,setLocation,toggleConnection} from './state.js';
+import {createState,eventTypes,locations,outcomes,addEvent,acknowledge,contact,conclude,setLocation,toggleConnection,setEmergencyContacts,confirmSafety,escalateDue} from './state.js';
 let state=createState();
 let selectedId=null;
 let callOpen=false;
@@ -20,6 +20,21 @@ const status=event=>`<span class="status-tag ${event.status}">${statusLabel[even
 function notify(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').classList.add('visible');toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),4500);}
 function empty(title,description,iconName='bell'){return `<div class="empty-state"><span class="empty-icon" data-icon="${iconName}"></span><h3>${title}</h3><p>${description}</p></div>`;}
 function historyHtml(items){return `<ol class="timeline">${items.map(item=>`<li><strong>${escape(item.text)}</strong><time datetime="${item.at}">${time(item.at)} · phiên mô phỏng</time>${item.note?`<p class="note">${escape(item.note)}</p>`:''}${item.eventId?`<button class="button subtle history-open" data-alert="${item.eventId}">Xem cảnh báo</button>`:''}</li>`).join('')}</ol>`;}
+function countdown(event){
+  if(event.escalation)return 'Đã mô phỏng gọi 115 và xử lý danh sách SMS';
+  if(event.confirmedAt)return 'Người đeo đã xác nhận an toàn';
+  if(event.status==='done')return 'Đã kết thúc';
+  return `Còn ${Math.max(0,Math.ceil((Date.parse(event.deadline)-Date.now())/1000))} giây để xác nhận an toàn`;
+}
+function tick(){
+  const escalated=escalateDue(state);
+  if(escalated.length){render();if($('detail-dialog').open)renderDetail();notify(`Đã mô phỏng gọi 115 và xử lý SMS cho ${escalated.length} cảnh báo. Không gửi liên hệ thật.`);}
+  document.querySelectorAll('[data-countdown]').forEach(el=>{const event=state.events.find(e=>e.id===el.dataset.countdown);if(event)el.textContent=countdown(event);});
+}
+// Use a deadline so delayed browser callbacks do not restart the 60-second window.
+setInterval(tick,250);
+document.addEventListener('visibilitychange',tick);
+window.addEventListener('pageshow',tick);
 function render(){
   const active=state.events.filter(event=>event.status!=='done');
   ['nav-count','active-count'].forEach(id=>{$(id).textContent=active.length;$(id).classList.toggle('has-alerts',active.length>0);});
@@ -38,9 +53,9 @@ function render(){
   if(state.location){$('map-pin').className=`map-pin ${state.location.key}`;$('map-location-name').textContent=state.location.key==='home'?'Nhà mẫu':'Công viên mẫu';}
   $('location-label').textContent=state.location?.name||'Chưa có dữ liệu vị trí';
   $('location-time').textContent=state.location?`Ghi nhận lúc ${time(state.location.recordedAt)} · dữ liệu mẫu`:'Không có vị trí để hiển thị.';
-  $('recent-alerts').innerHTML=active.length?active.slice(0,3).map(event=>`<button class="recent-item" data-alert="${event.id}"><span class="recent-top">${status(event)}<small>${time(event.at)}</small></span><h3>${eventTypes[event.type].title}</h3><p>${event.location?escape(event.location.name.split(' · ')[0]):'Chưa có vị trí'}</p><span class="detail-link">Xem và xử lý</span></button>`).join(''):`<div class="empty-state"><span class="empty-icon" data-icon="shield"></span><h3>Chưa có cảnh báo mới</h3><p>${state.events.length?'Các cảnh báo trong phiên đã được xử lý. Bạn có thể xem lại trong lịch sử.':'Khi có sự kiện, thông tin sẽ xuất hiện tại đây để bạn tiếp nhận.'}</p><button class="button primary" data-simulate="sos">${icon('play')}Thử cảnh báo SOS</button></div>`;
+  $('recent-alerts').innerHTML=active.length?active.slice(0,3).map(event=>`<button class="recent-item" data-alert="${event.id}"><span class="recent-top">${status(event)}<small data-countdown="${event.id}">${countdown(event)}</small><small>${time(event.at)}</small></span><h3>${eventTypes[event.type].title}</h3><p>${event.location?escape(event.location.name.split(' · ')[0]):'Chưa có vị trí'}</p><span class="detail-link">Xem và xử lý</span></button>`).join(''):`<div class="empty-state"><span class="empty-icon" data-icon="shield"></span><h3>Chưa có cảnh báo mới</h3><p>${state.events.length?'Các cảnh báo trong phiên đã được xử lý. Bạn có thể xem lại trong lịch sử.':'Khi có sự kiện, thông tin sẽ xuất hiện tại đây để bạn tiếp nhận.'}</p><button class="button primary" data-simulate="sos">${icon('play')}Thử cảnh báo SOS</button></div>`;
   const events=[...active,...state.events.filter(event=>event.status==='done')];
-  $('alert-list').innerHTML=events.length?events.map(event=>`<article class="alert-row"><span class="event-icon ${event.type}" data-icon="${eventTypes[event.type].icon}"></span><div>${status(event)}<h3>${eventTypes[event.type].title}</h3><p>Bà Minh · ${time(event.at)} · ${event.location?escape(event.location.name.split(' · ')[0]):'Chưa có vị trí'}</p></div><button class="button" data-alert="${event.id}">${event.status==='done'?'Xem kết quả':'Xem và xử lý'}</button></article>`).join(''):empty('Chưa có cảnh báo','Chọn một tình huống trong Điều khiển demo để bắt đầu.');
+  $('alert-list').innerHTML=events.length?events.map(event=>`<article class="alert-row"><span class="event-icon ${event.type}" data-icon="${eventTypes[event.type].icon}"></span><div>${status(event)}<h3>${eventTypes[event.type].title}</h3><p data-countdown="${event.id}">${countdown(event)}</p><p>Bà Minh · ${time(event.at)} · ${event.location?escape(event.location.name.split(' · ')[0]):'Chưa có vị trí'}</p></div><button class="button" data-alert="${event.id}">${event.status==='done'?'Xem kết quả':'Xem và xử lý'}</button></article>`).join(''):empty('Chưa có cảnh báo','Chọn một tình huống trong Điều khiển demo để bắt đầu.');
   $('history-list').innerHTML=state.history.length?historyHtml(state.history):empty('Chưa có lịch sử xử lý','Các sự kiện và thao tác của gia đình sẽ được ghi lại tại đây.','history');
   icons();
 }
@@ -59,6 +74,7 @@ function renderDetail(focusId){
   const event=state.events.find(item=>item.id===selectedId);if(!event)return;
   const type=eventTypes[event.type];
   $('detail-content').innerHTML=`<div class="dialog-head"><div><p class="eyebrow">Bà Nguyễn Thị Minh · dữ liệu mô phỏng</p><h2 id="detail-title">${type.title}</h2></div><button class="icon-button" data-close aria-label="Đóng chi tiết">${icon('x')}</button></div><div class="dialog-body"><dl class="detail-meta"><div><dt>Phát sinh lúc</dt><dd>${time(event.at)}</dd></div><div><dt>Trạng thái xử lý</dt><dd>${status(event)}</dd></div><div class="full"><dt>Vị trí đi kèm sự kiện</dt><dd>${escape(event.location?.name||'Chưa có dữ liệu vị trí')}<small class="muted">${event.location?`<br>Ghi nhận lúc ${time(event.location.recordedAt)}`:''}</small></dd></div></dl><p class="info-box">${type.description}${!event.connected?' Sự kiện được tạo thủ công khi thiết bị mô phỏng mất kết nối; vị trí đi kèm là dữ liệu gần nhất nếu có.':''}</p>
+    <div class="call-box"><strong>Thiết bị người đeo · mô phỏng</strong><p data-countdown="${event.id}" role="timer">${countdown(event)}</p><p>Sau 60 giây không xác nhận: mô phỏng gọi 115 kèm vị trí, rồi SMS đến các liên hệ khẩn cấp. Không có cuộc gọi hoặc SMS thật.</p>${!event.confirmedAt&&!event.escalation&&event.status!=='done'?'<button class="button primary" id="confirm-safety">Tôi an toàn — xác nhận trên thiết bị mô phỏng</button>':''}${event.escalation?`<p>${escape(event.escalation.message)}</p><p>${event.escalation.contacts.length} liên hệ trong danh sách gửi SMS mô phỏng.</p>`:''}</div>
     ${event.status==='active'?`<div class="call-box"><strong>Liên hệ với người thân</strong><p>${event.contact==='unreachable'?'Chưa liên hệ được. Cảnh báo vẫn đang xử lý. Hãy thử lại hoặc nhờ người ở gần hỗ trợ.':event.contact==='reached'?'Đã liên hệ được trong mô phỏng. Chọn kết quả đã xác minh bên dưới.':'Tiếp nhận chưa có nghĩa là người thân đã an toàn. Liên hệ để xác minh tình huống.'}</p>${callOpen?`<p><strong>Đang mô phỏng liên hệ</strong>Không có cuộc gọi hoặc tin nhắn thật được gửi.</p><button class="button primary" data-contact="reached">Đã liên hệ được</button><button class="button" data-contact="unreachable">Chưa liên hệ được</button>`:`<button class="button" id="contact-start">${icon('phone')}Liên hệ — mô phỏng</button>`}</div>`:''}
     ${event.status==='active'&&event.contact==='reached'?`<form class="resolution-form" id="resolution-form"><label for="outcome-select">Kết quả xử lý <span aria-hidden="true">*</span></label><select id="outcome-select" required><option value="">Chọn kết quả đã xác minh</option>${Object.entries(outcomes).map(([key,label])=>`<option value="${key}">${label}</option>`).join('')}</select><label for="outcome-note">Ghi chú <span class="muted">(không bắt buộc)</span></label><textarea id="outcome-note" maxlength="500" placeholder="Ghi lại kết quả hỗ trợ, tối đa 500 ký tự"></textarea><p id="form-error" class="form-message" role="alert"></p></form>`:''}
     ${event.status==='done'?`<div class="info-box"><strong>${outcomes[event.outcome]}</strong>${event.note?`<p class="saved-note">${escape(event.note)}</p>`:''}</div>`:''}
@@ -74,15 +90,17 @@ document.addEventListener('click',event=>{
     if(target.dataset.alert){openDetail(target.dataset.alert);return;}
     if(target.id==='open-guide')$('guide-dialog').showModal();
     if(target.id==='guide-start'){$('guide-dialog').close();const created=simulate('sos');openDetail(created.id);}
+    if(target.id==='confirm-safety'){const confirmed=confirmSafety(state,selectedId);tick();render();renderDetail();notify(confirmed?'Đã xác nhận an toàn. Đã dừng đếm ngược.':'Đã hết thời gian xác nhận. Xem diễn biến sự kiện.');}
     if(target.id==='acknowledge'){acknowledge(state,selectedId);render();renderDetail('contact-start');notify('Đã tiếp nhận. Hãy liên hệ để xác minh tình huống.');}
     if(target.id==='contact-start'){callOpen=true;renderDetail();$('detail-content').querySelector('[data-contact]')?.focus();}
     if(target.dataset.contact){contact(state,selectedId,target.dataset.contact);callOpen=false;render();renderDetail(target.dataset.contact==='reached'?'outcome-select':'contact-start');}
     if(target.id==='toggle-connection'){toggleConnection(state);render();notify(state.connected?'Đã kết nối lại thiết bị mô phỏng.':'Thiết bị mô phỏng mất kết nối. Vị trí gần nhất được giữ nguyên.');}
     if(target.id==='reset-demo')$('reset-dialog').showModal();
-    if(target.id==='confirm-reset'){state=createState();selectedId=null;callOpen=false;document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());location.hash='overview';render();navigate();notify('Đã bắt đầu phiên demo mới.');}
+    if(target.id==='confirm-reset'){state=createState();$('emergency-contacts-form').reset();$('contacts-message').textContent='Chưa cấu hình liên hệ.';selectedId=null;callOpen=false;document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());location.hash='overview';render();navigate();notify('Đã bắt đầu phiên demo mới.');}
   }catch(error){notify(error.message);}
 });
 document.addEventListener('submit',event=>{
+  if(event.target.id==='emergency-contacts-form'){event.preventDefault();try{const contacts=$('emergency-contacts').value.split('\n').filter(line=>line.trim()).map(line=>{const parts=line.split(',');if(parts.length!==2)throw new Error('Mỗi dòng gồm tên, số điện thoại.');return {name:parts[0].trim(),phone:parts[1].trim()};});setEmergencyContacts(state,contacts);$('contacts-message').textContent=`Đã lưu ${contacts.length} liên hệ trong phiên mô phỏng.`;}catch(error){$('contacts-message').textContent=error.message;}return;}
   if(event.target.id!=='resolution-form')return;event.preventDefault();
   try{conclude(state,selectedId,$('outcome-select').value,$('outcome-note').value);render();renderDetail();$('detail-dialog').querySelector('[data-close]').focus();notify('Đã lưu kết quả vào lịch sử xử lý.');}
   catch(error){$('form-error').textContent=error.message;}
