@@ -76,7 +76,7 @@ Không có tài khoản ứng dụng, theo dõi người thật, doanh thu giả
 
 SOS, nghi ngờ ngã và không có chuyển động đều bắt đầu đếm ngược 60 giây. Mở chi tiết để xác nhận an toàn trên thiết bị mô phỏng. Gia đình chọn “Tôi tiếp nhận” không dừng bộ đếm. Nếu không xác nhận đúng hạn, demo ghi lại cuộc gọi 115 kèm vị trí sự kiện, sau đó ghi SMS cho từng liên hệ đã cấu hình. Không có vị trí hoặc không có liên hệ vẫn được ghi rõ trong lịch sử. Không có cuộc gọi, GPS hoặc SMS thật.
 
-Thêm tối đa 10 liên hệ trong mục Liên hệ khẩn cấp, mỗi dòng gồm tên và số điện thoại cách nhau bằng dấu phẩy. Danh sách chỉ lưu trong phiên. Mỗi cảnh báo chỉ tự động xử lý một lần. Trình duyệt dùng thời hạn tuyệt đối: nếu tab tạm dừng, việc mô phỏng được xử lý khi tab chạy lại; đóng hoặc tải lại trang sẽ mất phiên. Thiết bị thật cần bộ đếm nền và dịch vụ liên hệ đã được kiểm chứng.
+Thêm tối đa 10 liên hệ trong mục Liên hệ khẩn cấp, nhập tên và số điện thoại vào hai ô riêng, chọn Thêm liên hệ. Chọn Sửa để cập nhật hoặc Xóa để gỡ một liên hệ. Danh sách chỉ lưu trong phiên. Mỗi cảnh báo chỉ tự động xử lý một lần. Trình duyệt dùng thời hạn tuyệt đối: nếu tab tạm dừng, việc mô phỏng được xử lý khi tab chạy lại; đóng hoặc tải lại trang sẽ mất phiên. Thiết bị thật cần bộ đếm nền và dịch vụ liên hệ đã được kiểm chứng.
 
 ```mermaid
 flowchart TD
