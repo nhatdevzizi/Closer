@@ -10,6 +10,7 @@ import {createState,eventTypes,locations,outcomes,addEvent,acknowledge,contact,c
 let state=createState();
 let selectedId=null;
 let callOpen=false;
+let editingContact=null;
 let toastTimer;
 const $=id=>document.getElementById(id);
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -20,6 +21,14 @@ const status=event=>`<span class="status-tag ${event.status}">${statusLabel[even
 function notify(message){clearTimeout(toastTimer);$('toast').textContent=message;$('toast').classList.add('visible');toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),4500);}
 function empty(title,description,iconName='bell'){return `<div class="empty-state"><span class="empty-icon" data-icon="${iconName}"></span><h3>${title}</h3><p>${description}</p></div>`;}
 function historyHtml(items){return `<ol class="timeline">${items.map(item=>`<li><strong>${escape(item.text)}</strong><time datetime="${item.at}">${time(item.at)} · phiên mô phỏng</time>${item.note?`<p class="note">${escape(item.note)}</p>`:''}${item.eventId?`<button class="button subtle history-open" data-alert="${item.eventId}">Xem cảnh báo</button>`:''}</li>`).join('')}</ol>`;}
+function resetContactForm(){
+  editingContact=null;$('emergency-contacts-form').reset();
+  $('contact-form-title').textContent='Thêm liên hệ';$('save-contact').textContent='Thêm liên hệ';$('cancel-contact-edit').hidden=true;
+}
+function renderContacts(){
+  $('contacts-count').textContent=`${state.emergencyContacts.length} / 10`;
+  $('emergency-contacts-list').innerHTML=state.emergencyContacts.length?`<ul class="contacts-list">${state.emergencyContacts.map((c,index)=>`<li><div><strong>${escape(c.name)}</strong><span>${escape(c.phone)}</span></div><div class="contact-actions"><button type="button" class="button subtle" data-edit-contact="${index}" aria-label="Sửa liên hệ ${escape(c.name)}">Sửa</button><button type="button" class="button subtle" data-remove-contact="${index}" aria-label="Xóa liên hệ ${escape(c.name)}">Xóa</button></div></li>`).join('')}</ul>`:'<p class="contacts-empty">Chưa có liên hệ. Thêm người thân đầu tiên bên dưới.</p>';
+}
 function countdown(event){
   if(event.escalation)return 'Đã mô phỏng gọi 115 và xử lý danh sách SMS';
   if(event.confirmedAt)return 'Người đeo đã xác nhận an toàn';
@@ -36,6 +45,7 @@ setInterval(tick,250);
 document.addEventListener('visibilitychange',tick);
 window.addEventListener('pageshow',tick);
 function render(){
+  renderContacts();
   const active=state.events.filter(event=>event.status!=='done');
   ['nav-count','active-count'].forEach(id=>{$(id).textContent=active.length;$(id).classList.toggle('has-alerts',active.length>0);});
   $('connection-label').textContent=state.connected?'Đang kết nối':'Mất kết nối';
@@ -88,6 +98,9 @@ document.addEventListener('click',event=>{
     if(target.matches('[data-close]')){target.closest('dialog').close();return;}
     if(target.dataset.simulate){simulate(target.dataset.simulate);return;}
     if(target.dataset.alert){openDetail(target.dataset.alert);return;}
+    if(target.hasAttribute('data-edit-contact')){editingContact=Number(target.dataset.editContact);const c=state.emergencyContacts[editingContact];$('contact-name').value=c.name;$('contact-phone').value=c.phone;$('contact-form-title').textContent='Chỉnh sửa liên hệ';$('save-contact').textContent='Lưu thay đổi';$('cancel-contact-edit').hidden=false;$('contacts-message').textContent='';$('contact-name').focus();return;}
+    if(target.hasAttribute('data-remove-contact')){const index=Number(target.dataset.removeContact);setEmergencyContacts(state,state.emergencyContacts.filter((_,i)=>i!==index));resetContactForm();renderContacts();$('contacts-message').textContent='Đã xóa liên hệ.';$('contact-name').focus();return;}
+    if(target.id==='cancel-contact-edit'){resetContactForm();$('contacts-message').textContent='Đã hủy chỉnh sửa.';$('contact-name').focus();return;}
     if(target.id==='open-guide')$('guide-dialog').showModal();
     if(target.id==='guide-start'){$('guide-dialog').close();const created=simulate('sos');openDetail(created.id);}
     if(target.id==='confirm-safety'){const confirmed=confirmSafety(state,selectedId);tick();render();renderDetail();notify(confirmed?'Đã xác nhận an toàn. Đã dừng đếm ngược.':'Đã hết thời gian xác nhận. Xem diễn biến sự kiện.');}
@@ -96,11 +109,22 @@ document.addEventListener('click',event=>{
     if(target.dataset.contact){contact(state,selectedId,target.dataset.contact);callOpen=false;render();renderDetail(target.dataset.contact==='reached'?'outcome-select':'contact-start');}
     if(target.id==='toggle-connection'){toggleConnection(state);render();notify(state.connected?'Đã kết nối lại thiết bị mô phỏng.':'Thiết bị mô phỏng mất kết nối. Vị trí gần nhất được giữ nguyên.');}
     if(target.id==='reset-demo')$('reset-dialog').showModal();
-    if(target.id==='confirm-reset'){state=createState();$('emergency-contacts-form').reset();$('contacts-message').textContent='Chưa cấu hình liên hệ.';selectedId=null;callOpen=false;document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());location.hash='overview';render();navigate();notify('Đã bắt đầu phiên demo mới.');}
+    if(target.id==='confirm-reset'){state=createState();resetContactForm();$('contacts-message').textContent='';selectedId=null;callOpen=false;document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());location.hash='overview';render();navigate();notify('Đã bắt đầu phiên demo mới.');}
   }catch(error){notify(error.message);}
 });
 document.addEventListener('submit',event=>{
-  if(event.target.id==='emergency-contacts-form'){event.preventDefault();try{const contacts=$('emergency-contacts').value.split('\n').filter(line=>line.trim()).map(line=>{const parts=line.split(',');if(parts.length!==2)throw new Error('Mỗi dòng gồm tên, số điện thoại.');return {name:parts[0].trim(),phone:parts[1].trim()};});setEmergencyContacts(state,contacts);$('contacts-message').textContent=`Đã lưu ${contacts.length} liên hệ trong phiên mô phỏng.`;}catch(error){$('contacts-message').textContent=error.message;}return;}
+  if(event.target.id==='emergency-contacts-form'){
+    event.preventDefault();
+    try{
+      const c={name:$('contact-name').value.trim(),phone:$('contact-phone').value.trim()};
+      const contacts=state.emergencyContacts.slice();
+      const updating=editingContact!==null;
+      if(updating)contacts[editingContact]=c;else contacts.push(c);
+      setEmergencyContacts(state,contacts);resetContactForm();renderContacts();
+      $('contacts-message').textContent=updating?'Đã cập nhật liên hệ.':'Đã thêm liên hệ.';$('contact-name').focus();
+    }catch(error){$('contacts-message').textContent=error.message;}
+    return;
+  }
   if(event.target.id!=='resolution-form')return;event.preventDefault();
   try{conclude(state,selectedId,$('outcome-select').value,$('outcome-note').value);render();renderDetail();$('detail-dialog').querySelector('[data-close]').focus();notify('Đã lưu kết quả vào lịch sử xử lý.');}
   catch(error){$('form-error').textContent=error.message;}
