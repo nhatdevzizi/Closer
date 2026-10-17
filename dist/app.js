@@ -23,11 +23,11 @@ function empty(title,description,iconName='bell'){return `<div class="empty-stat
 function historyHtml(items){return `<ol class="timeline">${items.map(item=>`<li><strong>${escape(item.text)}</strong><time datetime="${item.at}">${time(item.at)} · phiên mô phỏng</time>${item.note?`<p class="note">${escape(item.note)}</p>`:''}${item.eventId?`<button class="button subtle history-open" data-alert="${item.eventId}">Xem cảnh báo</button>`:''}</li>`).join('')}</ol>`;}
 function resetContactForm(){
   editingContact=null;$('emergency-contacts-form').reset();
-  $('contact-form-title').textContent='Thêm liên hệ';$('save-contact').textContent='Thêm liên hệ';$('cancel-contact-edit').hidden=true;
+  $('contact-form-title').textContent='Thêm liên hệ';$('save-contact').textContent='Thêm liên hệ';$('contacts-message').textContent='';
 }
 function renderContacts(){
-  $('contacts-count').textContent=`${state.emergencyContacts.length} / 10`;
-  $('emergency-contacts-list').innerHTML=state.emergencyContacts.length?`<ul class="contacts-list">${state.emergencyContacts.map((c,index)=>`<li><div><strong>${escape(c.name)}</strong><span>${escape(c.phone)}</span></div><div class="contact-actions"><button type="button" class="button subtle" data-edit-contact="${index}" aria-label="Sửa liên hệ ${escape(c.name)}">Sửa</button><button type="button" class="button subtle" data-remove-contact="${index}" aria-label="Xóa liên hệ ${escape(c.name)}">Xóa</button></div></li>`).join('')}</ul>`:'<p class="contacts-empty">Chưa có liên hệ. Thêm người thân đầu tiên bên dưới.</p>';
+  $('contacts-count').textContent=`${state.emergencyContacts.length} / 10`;$('add-emergency-contact').disabled=state.emergencyContacts.length>=10;
+  $('emergency-contacts-list').innerHTML=state.emergencyContacts.length?`<ul class="contacts-list">${state.emergencyContacts.map((c,index)=>`<li><span class="contact-avatar" aria-hidden="true">${escape(Array.from(c.name.trim())[0].toUpperCase())}</span><div class="contact-identity"><strong>${escape(c.name)}</strong><span>${escape(c.phone)}</span></div><div class="contact-actions"><button type="button" class="button subtle" data-edit-contact="${index}" aria-label="Sửa liên hệ ${escape(c.name)}">Sửa</button><button type="button" class="button subtle" data-remove-contact="${index}" aria-label="Xóa liên hệ ${escape(c.name)}">Xóa</button></div></li>`).join('')}</ul>`:`<div class="contacts-empty"><span class="contacts-empty-symbol">${icon('heart')}</span><h3>Thêm một người bạn tin tưởng</h3><p>Người thân sẽ có tên trong danh sách nhận cảnh báo SOS và vị trí mô phỏng của bạn.</p><button type="button" class="button" data-add-contact>+ Thêm người thân đầu tiên</button></div>`;
 }
 function countdown(event){
   if(event.escalation)return 'Đã mô phỏng gọi 115 và xử lý danh sách SMS';
@@ -98,9 +98,10 @@ document.addEventListener('click',event=>{
     if(target.matches('[data-close]')){target.closest('dialog').close();return;}
     if(target.dataset.simulate){simulate(target.dataset.simulate);return;}
     if(target.dataset.alert){openDetail(target.dataset.alert);return;}
-    if(target.hasAttribute('data-edit-contact')){editingContact=Number(target.dataset.editContact);const c=state.emergencyContacts[editingContact];$('contact-name').value=c.name;$('contact-phone').value=c.phone;$('contact-form-title').textContent='Chỉnh sửa liên hệ';$('save-contact').textContent='Lưu thay đổi';$('cancel-contact-edit').hidden=false;$('contacts-message').textContent='';$('contact-name').focus();return;}
-    if(target.hasAttribute('data-remove-contact')){const index=Number(target.dataset.removeContact);setEmergencyContacts(state,state.emergencyContacts.filter((_,i)=>i!==index));resetContactForm();renderContacts();$('contacts-message').textContent='Đã xóa liên hệ.';$('contact-name').focus();return;}
-    if(target.id==='cancel-contact-edit'){resetContactForm();$('contacts-message').textContent='Đã hủy chỉnh sửa.';$('contact-name').focus();return;}
+    if(target.id==='add-emergency-contact'||target.hasAttribute('data-add-contact')){resetContactForm();$('contact-editor-dialog').showModal();$('contact-name').focus();return;}
+    if(target.hasAttribute('data-edit-contact')){editingContact=Number(target.dataset.editContact);const c=state.emergencyContacts[editingContact];$('contact-name').value=c.name;$('contact-phone').value=c.phone;$('contact-form-title').textContent='Chỉnh sửa liên hệ';$('save-contact').textContent='Lưu thay đổi';$('contacts-message').textContent='';$('contact-editor-dialog').showModal();$('contact-name').focus();return;}
+    if(target.hasAttribute('data-remove-contact')){const index=Number(target.dataset.removeContact);setEmergencyContacts(state,state.emergencyContacts.filter((_,i)=>i!==index));resetContactForm();renderContacts();$('contacts-status').textContent='Đã xóa liên hệ.';icons($('emergency-contacts-list'));$('add-emergency-contact').focus();return;}
+    if(target.id==='cancel-contact-edit'){$('contact-editor-dialog').close();resetContactForm();return;}
     if(target.id==='open-guide')$('guide-dialog').showModal();
     if(target.id==='guide-start'){$('guide-dialog').close();const created=simulate('sos');openDetail(created.id);}
     if(target.id==='confirm-safety'){const confirmed=confirmSafety(state,selectedId);tick();render();renderDetail();notify(confirmed?'Đã xác nhận an toàn. Đã dừng đếm ngược.':'Đã hết thời gian xác nhận. Xem diễn biến sự kiện.');}
@@ -109,7 +110,7 @@ document.addEventListener('click',event=>{
     if(target.dataset.contact){contact(state,selectedId,target.dataset.contact);callOpen=false;render();renderDetail(target.dataset.contact==='reached'?'outcome-select':'contact-start');}
     if(target.id==='toggle-connection'){toggleConnection(state);render();notify(state.connected?'Đã kết nối lại thiết bị mô phỏng.':'Thiết bị mô phỏng mất kết nối. Vị trí gần nhất được giữ nguyên.');}
     if(target.id==='reset-demo')$('reset-dialog').showModal();
-    if(target.id==='confirm-reset'){state=createState();resetContactForm();$('contacts-message').textContent='';selectedId=null;callOpen=false;document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());location.hash='overview';render();navigate();notify('Đã bắt đầu phiên demo mới.');}
+    if(target.id==='confirm-reset'){state=createState();resetContactForm();$('contacts-status').textContent='';selectedId=null;callOpen=false;document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());location.hash='overview';render();navigate();notify('Đã bắt đầu phiên demo mới.');}
   }catch(error){notify(error.message);}
 });
 document.addEventListener('submit',event=>{
@@ -121,7 +122,7 @@ document.addEventListener('submit',event=>{
       const updating=editingContact!==null;
       if(updating)contacts[editingContact]=c;else contacts.push(c);
       setEmergencyContacts(state,contacts);resetContactForm();renderContacts();
-      $('contacts-message').textContent=updating?'Đã cập nhật liên hệ.':'Đã thêm liên hệ.';$('contact-name').focus();
+      $('contacts-status').textContent=updating?'Đã cập nhật liên hệ.':'Đã thêm liên hệ.';$('contact-editor-dialog').close();$('add-emergency-contact').focus();
     }catch(error){$('contacts-message').textContent=error.message;}
     return;
   }
@@ -131,7 +132,7 @@ document.addEventListener('submit',event=>{
 });
 $('location-select').addEventListener('change',event=>{try{setLocation(state,event.target.value);render();notify(state.location?'Đã cập nhật vị trí mẫu. Vị trí trong cảnh báo cũ được giữ nguyên.':'Đã chuyển sang tình huống chưa có dữ liệu vị trí.');}catch(error){notify(error.message);render();}});
 window.addEventListener('hashchange',navigate);
-document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',()=>{if(dialog.id==='detail-dialog'){const opener=Array.from(document.querySelectorAll(`[data-alert="${selectedId}"]`)).find(el=>el.checkVisibility());if(opener){opener.focus();return;}}if(!document.activeElement||document.activeElement===document.body){document.querySelector('[aria-current="page"]')?.focus();}}));
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',()=>{if(dialog.id==='contact-editor-dialog'){$('add-emergency-contact').focus();return;}if(dialog.id==='detail-dialog'){const opener=Array.from(document.querySelectorAll(`[data-alert="${selectedId}"]`)).find(el=>el.checkVisibility());if(opener){opener.focus();return;}}if(!document.activeElement||document.activeElement===document.body){document.querySelector('[aria-current="page"]')?.focus();}}));
 render();navigate();
 // shortcut: session-only mock state; connect verified hardware and persistence when moving beyond the investor demo.
 const modelContext=document.modelContext;
