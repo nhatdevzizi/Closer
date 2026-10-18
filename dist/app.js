@@ -47,6 +47,13 @@ window.addEventListener('pageshow',tick);
 function render(){
   renderContacts();
   const active=state.events.filter(event=>event.status!=='done');
+  $('metric-active').textContent=String(active.length).padStart(2,'0');
+  $('metric-progress').textContent=String(state.events.filter(event=>event.status==='active').length).padStart(2,'0');
+  $('metric-done').textContent=String(state.events.filter(event=>event.status==='done').length).padStart(2,'0');
+  $('metric-device').innerHTML=`${state.connected?'01':'00'} <small>/ 01</small>`;
+  $('metric-device-note').textContent=state.connected?'Vòng tay An Tâm · AT-001':'Mất tín hiệu · giữ vị trí gần nhất';
+  $('metric-alert-note').textContent=active.length?'Cần gia đình xác minh':'Chưa có sự kiện mới';
+  document.body.classList.toggle('has-active-emergency',active.length>0);
   ['nav-count','active-count'].forEach(id=>{$(id).textContent=active.length;$(id).classList.toggle('has-alerts',active.length>0);});
   $('connection-label').textContent=state.connected?'Đang kết nối':'Mất kết nối';
   $('connection-label').classList.toggle('warning-text',!state.connected);
@@ -74,7 +81,7 @@ function navigate(){
   const view=['overview','alerts','history'].includes(requested)?requested:'overview';
   for(const key of ['overview','alerts','history'])$(key+'-view').hidden=key!==view;
   document.querySelectorAll('[data-view]').forEach(link=>{if(link.dataset.view===view)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
-  $('page-title').textContent={overview:'Tổng quan chăm sóc',alerts:'Cảnh báo người thân',history:'Lịch sử đồng hành'}[view];
+  $('page-title').textContent={overview:'Tổng quan khẩn cấp',alerts:'Cảnh báo người thân',history:'Lịch sử đồng hành'}[view];
 }
 function simulate(type){const event=addEvent(state,type);render();notify(`${eventTypes[type].title} — mở Cảnh báo để tiếp nhận.${!state.connected?' Đây là sự kiện thử thủ công khi thiết bị mô phỏng mất kết nối.':''}`);return event;}
 function openDetail(id){
@@ -102,7 +109,7 @@ document.addEventListener('click',event=>{
     if(target.hasAttribute('data-edit-contact')){editingContact=Number(target.dataset.editContact);const c=state.emergencyContacts[editingContact];$('contact-name').value=c.name;$('contact-phone').value=c.phone;$('contact-form-title').textContent='Chỉnh sửa liên hệ';$('save-contact').textContent='Lưu thay đổi';$('contacts-message').textContent='';$('contact-editor-dialog').showModal();$('contact-name').focus();return;}
     if(target.hasAttribute('data-remove-contact')){const index=Number(target.dataset.removeContact);setEmergencyContacts(state,state.emergencyContacts.filter((_,i)=>i!==index));resetContactForm();renderContacts();$('contacts-status').textContent='Đã xóa liên hệ.';icons($('emergency-contacts-list'));$('add-emergency-contact').focus();return;}
     if(target.id==='cancel-contact-edit'){$('contact-editor-dialog').close();resetContactForm();return;}
-    if(target.id==='open-guide')$('guide-dialog').showModal();
+    if(target.id==='open-guide'||target.hasAttribute('data-open-guide'))$('guide-dialog').showModal();
     if(target.id==='guide-start'){$('guide-dialog').close();const created=simulate('sos');openDetail(created.id);}
     if(target.id==='confirm-safety'){const confirmed=confirmSafety(state,selectedId);tick();render();renderDetail();notify(confirmed?'Đã xác nhận an toàn. Đã dừng đếm ngược.':'Đã hết thời gian xác nhận. Xem diễn biến sự kiện.');}
     if(target.id==='acknowledge'){acknowledge(state,selectedId);render();renderDetail('contact-start');notify('Đã tiếp nhận. Hãy liên hệ để xác minh tình huống.');}

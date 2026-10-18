@@ -102,3 +102,11 @@ Kiểm tra bổ sung: 6 kiểm thử trạng thái đạt, gồm mốc 60 giây,
 ## Giao diện điện thoại
 
 Thanh điều hướng, cảnh báo, danh sách liên hệ và hộp thoại có bố cục cho màn hẹp. Nút và ô nhập hỗ trợ thao tác chạm; chữ ô nhập tối thiểu 16px. Đã kiểm tra không tràn ngang ở 320, 375, 390, 768 và 1440px cho tổng quan, cảnh báo, lịch sử, hộp thoại liên hệ và SOS bằng khung trình duyệt cùng nguồn. Chưa kiểm tra bàn phím ảo trên điện thoại thật.
+
+## SOS dashboard layout
+
+The overview now uses a dark navigation rail, a red SOS action, session counters, a location map, and an alert response panel. The profile appears below the map and alerts. On phones, alerts appear before the map. Existing Vietnamese content and simulated response behavior are retained.
+
+`dist/dashboard.css` contains the dashboard layout and responsive rules. `dist/motion.js` adds brief GSAP entrance effects and respects reduced motion. GSAP 3.14.2 and ScrollTrigger are included locally in `dist/vendor`; animation does not require a CDN request. Outfit loads from Google Fonts, with local font fallbacks.
+
+Validation for this redesign: six state tests passed with `node --test tests/state.test.js`. Browser checks covered the SOS response lifecycle and session counters. Desktop (1440 px) and phone (390 px) checks found no horizontal page overflow. No browser console errors were recorded during these checks.
