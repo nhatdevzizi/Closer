@@ -12,7 +12,7 @@ function log(state, eventId, text, now, note='') {state.history.unshift({id:cryp
 function findEvent(state,id) {const event=state.events.find(e=>e.id===id);if(!event)throw new Error('Không tìm thấy cảnh báo trong phiên hiện tại.');return event;}
 export function addEvent(state, type, now = new Date().toISOString()) {
   if(!Object.hasOwn(eventTypes,type))throw new Error('Loại sự kiện không hợp lệ.');
-  const event={id:crypto.randomUUID(),type,at:now,deadline:new Date(Date.parse(now)+60000).toISOString(),confirmedAt:null,escalation:null,location:state.location?{...state.location}:null,connected:state.connected,status:'new',contact:null,outcome:null,note:''};
+  const event={id:crypto.randomUUID(),type,at:now,deadline:new Date(Date.parse(now)+30000).toISOString(),confirmedAt:null,escalation:null,location:state.location?{...state.location}:null,connected:state.connected,status:'new',contact:null,outcome:null,note:''};
   state.events.unshift(event);
   log(state,event.id,`Hiển thị cảnh báo: ${eventTypes[type].title}`,now);
   return event;
@@ -34,7 +34,7 @@ export function escalateDue(state,now=new Date().toISOString()) {
   for(const event of state.events){
     if(event.confirmedAt||event.escalation||event.status==='done'||Date.parse(now)<Date.parse(event.deadline))continue;
     const location=event.location?`${event.location.name} (ghi nhận ${event.location.recordedAt}; ${event.connected?'kết nối khi phát sinh':'dữ liệu gần nhất, thiết bị mất kết nối'})`:'Chưa có dữ liệu vị trí';
-    const message=`KHẨN CẤP — Bà Minh: ${eventTypes[event.type].title}. Không xác nhận sau 60 giây. Vị trí: ${location}.`;
+    const message=`KHẨN CẤP — Bà Minh: ${eventTypes[event.type].title}. Không xác nhận sau 30 giây. Vị trí: ${location}.`;
     event.escalation={at:now,hotline:'115',message,contacts:state.emergencyContacts.map(c=>({...c})),simulated:true};
     log(state,event.id,`Mô phỏng gọi 115 và gửi vị trí: ${location}`,now);
     for(const c of event.escalation.contacts)log(state,event.id,`Mô phỏng SMS đến ${c.name} (${c.phone})`,now,message);
