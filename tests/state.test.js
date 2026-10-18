@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,addEvent,acknowledge,contact,conclude,setLocation,toggleConnection,setEmergencyContacts,confirmSafety,escalateDue} from '../dist/state.js';
-const before='2026-10-09T03:00:00.000Z',after='2026-10-09T03:01:00.000Z';
+const before='2026-10-09T03:00:00.000Z',after='2026-10-09T03:00:30.000Z';
 test('SOS lifecycle requires confirmation; duplicate actions are harmless',()=>{
  const s=createState(before),e=addEvent(s,'sos',before);
  assert.throws(()=>contact(s,e.id,'reached'));
@@ -36,11 +36,12 @@ test('invalid input preserves state and a reset restores all defaults',()=>{
  const reset=createState(before);assert.deepEqual(reset,snapshot);
 });
 
-test('all emergency types escalate once at 60 seconds, hotline before contact texts',()=>{
+test('all emergency types escalate once at 30 seconds, hotline before contact texts',()=>{
  for(const type of ['sos','fall','inactive']){
   const s=createState(before);setEmergencyContacts(s,[{name:'Family',phone:'+84912345678'}]);
   const e=addEvent(s,type,before);acknowledge(s,e.id,before);
-  assert.equal(escalateDue(s,'2026-10-09T03:00:59.999Z').length,0);
+  assert.equal(Date.parse(e.deadline)-Date.parse(e.at),30000);
+  assert.equal(escalateDue(s,'2026-10-09T03:00:29.999Z').length,0);
   assert.equal(escalateDue(s,after).length,1);
   assert.equal(e.escalation.hotline,'115');assert.equal(e.escalation.simulated,true);
   assert.match(e.escalation.message,/Nhà mẫu/);assert.equal(e.escalation.contacts.length,1);
@@ -50,7 +51,7 @@ test('all emergency types escalate once at 60 seconds, hotline before contact te
 });
 test('wearer confirmation cancels timer; family acceptance does not; late callbacks escalate',()=>{
  const s=createState(before),safe=addEvent(s,'sos',before),due=addEvent(s,'fall',before);
- assert.equal(confirmSafety(s,safe.id,'2026-10-09T03:00:59.000Z'),true);
+ assert.equal(confirmSafety(s,safe.id,'2026-10-09T03:00:29.999Z'),true);
  assert.equal(confirmSafety(s,safe.id,before),false);acknowledge(s,due.id,before);
  assert.equal(confirmSafety(s,due.id,after),false);
  assert.deepEqual(escalateDue(s,'2026-10-09T03:05:00.000Z').map(e=>e.id),[due.id]);

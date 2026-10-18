@@ -72,22 +72,22 @@ Mọi hồ sơ, vị trí, kết nối, cảnh báo và liên hệ đều đư�
 
 Không có tài khoản ứng dụng, theo dõi người thật, doanh thu giả định, số liệu độ chính xác hoặc cam kết y tế. Quyền truy cập bản xuất bản do Sites quản lý; lần xuất bản đầu giữ riêng tư cho chủ sở hữu.
 
-## Tự động xử lý sau 60 giây — mô phỏng
+## Tự động xử lý sau 30 giây — mô phỏng
 
-SOS, nghi ngờ ngã và không có chuyển động đều bắt đầu đếm ngược 60 giây. Mở chi tiết để xác nhận an toàn trên thiết bị mô phỏng. Gia đình chọn “Tôi tiếp nhận” không dừng bộ đếm. Nếu không xác nhận đúng hạn, demo ghi lại cuộc gọi 115 kèm vị trí sự kiện, sau đó ghi SMS cho từng liên hệ đã cấu hình. Không có vị trí hoặc không có liên hệ vẫn được ghi rõ trong lịch sử. Không có cuộc gọi, GPS hoặc SMS thật.
+SOS, nghi ngờ ngã và không có chuyển động đều bắt đầu đếm ngược 30 giây. Mở chi tiết để xác nhận an toàn trên thiết bị mô phỏng. Gia đình chọn “Tôi tiếp nhận” không dừng bộ đếm. Nếu không xác nhận đúng hạn, demo ghi lại cuộc gọi 115 kèm vị trí sự kiện, sau đó ghi SMS cho từng liên hệ đã cấu hình. Không có vị trí hoặc không có liên hệ vẫn được ghi rõ trong lịch sử. Không có cuộc gọi, GPS hoặc SMS thật.
 
 Thêm tối đa 10 liên hệ trong mục Liên hệ khẩn cấp, chọn Thêm liên hệ để mở hộp thoại, nhập tên và số điện thoại vào hai ô riêng rồi lưu. Chọn Sửa để cập nhật hoặc Xóa để gỡ một liên hệ. Danh sách chỉ lưu trong phiên. Mỗi cảnh báo chỉ tự động xử lý một lần. Trình duyệt dùng thời hạn tuyệt đối: nếu tab tạm dừng, việc mô phỏng được xử lý khi tab chạy lại; đóng hoặc tải lại trang sẽ mất phiên. Thiết bị thật cần bộ đếm nền và dịch vụ liên hệ đã được kiểm chứng.
 
 ```mermaid
 flowchart TD
-  App[Ứng dụng demo] --> Alerts[Cảnh báo và bộ đếm 60 giây]
+  App[Ứng dụng demo] --> Alerts[Cảnh báo và bộ đếm 30 giây]
   App --> Contacts[Danh sách liên hệ khẩn cấp]
   App --> History[Lịch sử mô phỏng]
 ```
 
 ```mermaid
 flowchart LR
-  Trigger[SOS / nghi ngờ ngã / không chuyển động] --> Timer[Thời hạn 60 giây]
+  Trigger[SOS / nghi ngờ ngã / không chuyển động] --> Timer[Thời hạn 30 giây]
   Wearer[Người đeo xác nhận] --> Cancel[Dừng bộ đếm]
   Timer --> Timeout[Không xác nhận đúng hạn]
   Location[Vị trí sự kiện hoặc thông báo thiếu vị trí] --> Hotline[Mô phỏng gọi 115]
@@ -97,7 +97,7 @@ flowchart LR
   SMS --> History[Lịch sử]
 ```
 
-Kiểm tra bổ sung: 6 kiểm thử trạng thái đạt, gồm mốc 60 giây, xác nhận người đeo, tiếp nhận của gia đình, chống lặp, thiếu vị trí, mất kết nối, kiểm tra liên hệ và bảo toàn dữ liệu đã ghi.
+Kiểm tra bổ sung: 6 kiểm thử trạng thái đạt, gồm mốc 30 giây, xác nhận người đeo, tiếp nhận của gia đình, chống lặp, thiếu vị trí, mất kết nối, kiểm tra liên hệ và bảo toàn dữ liệu đã ghi.
 
 ## Giao diện điện thoại
 
